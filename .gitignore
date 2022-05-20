@@ -1,0 +1,10 @@
+.venv 
+.vscode
+*.pyc
+venv
+.DS_Store
+pyproject.toml
+poetry.lock
+.python-version
+*.whl
+*.gz
