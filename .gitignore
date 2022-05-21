@@ -8,3 +8,6 @@ poetry.lock
 .python-version
 *.whl
 *.gz
+__pycache__
+.zip
+.ebextensions
