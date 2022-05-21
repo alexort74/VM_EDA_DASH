@@ -48,3 +48,6 @@ def display_page(pathname):
 
 if __name__ == '__main__':
     application.run(debug=True, use_reloader=False)
+
+#if __name__ == '__main__':
+#    application.run(debug=True, port=8080)
