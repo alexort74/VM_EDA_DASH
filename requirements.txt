@@ -434,8 +434,8 @@ fastapi==0.65.3; python_version >= "3.6" \
 fastjsonschema==2.15.3; python_version >= "3.7" \
     --hash=sha256:ddb0b1d8243e6e3abb822bd14e447a89f4ab7439342912d590444831fa00b6a0 \
     --hash=sha256:0a572f0836962d844c1fc435e200b2e4f4677e4e6611a2e3bdd01ba697c275ec
-fiona @ file:///D:/dev/Dash-by-Plotly/VM_EDA/Fiona/dist/Fiona-1.8.19-cp37-cp37m-win_amd64.whl \
-    --hash=sha256:79def56a85b439f404d0e3d8ae7443fb4189f9ae324520b771fb92aebe97dca2
+fiona==1.8.19; python_version >= "3.7" \
+    --hash=sha256:e4a59f0d9044a4aeb2d8f098888a5c117997e45106b3382badc395d28b32d533
 flask-compress==1.12; python_version >= "3.6" and python_version < "4" \
     --hash=sha256:e2159499f39d618a4d56ba0484e7b58b57956b9a2c6d3510f095f5bb14b7afc5 \
     --hash=sha256:9f4e40211755e86f85e5eb7d414856ef1e8751912caa78d62853169400335f0c
@@ -456,8 +456,8 @@ funcy==1.17 \
     --hash=sha256:40b9b9a88141ae6a174df1a95861f2b82f2fdc17669080788b73a3ed9370e968
 future==0.18.2; python_version >= "2.6" and python_full_version < "3.0.0" or python_full_version >= "3.3.0" \
     --hash=sha256:b1bead90b70cf6ec3f0710ae53a525360fa360d306a86583adc6bf83a4db537d
-gdal @ file:///D:/dev/Dash-by-Plotly/VM_EDA/GDAL/dist/GDAL-3.2.3-cp37-cp37m-win_amd64.whl \
-    --hash=sha256:00d67b1da96d6940bf2cc6dd2d30d13a80bf4fca9ddb1acba1f375c14fae9401
+gdal==3.2.3; python_version >= "3.7" \
+    --hash=sha256:93b7526d7edb542ca319758978ab3c41b04dcb5ec3642c5c9d08346675fee5f6
 gensim==3.8.2 \
     --hash=sha256:ae3b493154073d059242fd4929cec050db77995b34621d3c9c7a622689cae341 \
     --hash=sha256:9d4407d0d866afa97c8a2c9d04ad0a6b996fe02f1f96144c0f929608bcdbff78 \
