@@ -22,17 +22,31 @@ from app import app
 wells_final_df = pd.read_pickle("datasets/wells_final_Q42021_df.pkl")
 production_final_df = pd.read_pickle("datasets/production_final_Q42021_df.pkl")
     
-wells_df = wells_final_df \
-    .query(f"well_type == 'Horizontal'") \
+wells_df_oil = wells_final_df \
     .query(f"produced_fluid == 'Oil'") \
+    .query(f"well_type == 'Horizontal'") \
     .query(f"horizontal_length > 0") \
     .query(f"proppant_volume_lbm > 0") \
     .query(f"fluid_volume_m3 > 0") \
     .query(f"max_qo_bpd == max_qo_bpd") \
     .query(f"cum180_oil_bbl == cum180_oil_bbl") \
     .query(f"eur_total_mboeq == eur_total_mboeq") \
-    .assign(proppant_intensity_lbm_ft = lambda x: x.proppant_volume_lbm / (x.horizontal_length*3.28084)) \
     .assign(fluid_volume_bbl = lambda x: x.fluid_volume_m3*6.28981) \
+    .assign(proppant_intensity_lbm_ft = lambda x: x.proppant_volume_lbm / (x.horizontal_length*3.28084)) \
+    .assign(fluid_intensity_bbl_ft = lambda x: x.fluid_volume_m3*6.28981 / (x.horizontal_length*3.28084)) \
+    .assign(proppant_fluid_ratio_lbm_gal = lambda x: x.proppant_volume_lbm / (x.fluid_volume_m3*264.172))
+    
+wells_df_gas = wells_final_df \
+    .query(f"produced_fluid == 'Gas'") \
+    .query(f"well_type == 'Horizontal'") \
+    .query(f"horizontal_length > 0") \
+    .query(f"proppant_volume_lbm > 0") \
+    .query(f"fluid_volume_m3 > 0") \
+    .query(f"max_qg_mscfd == max_qg_mscfd") \
+    .query(f"cum180_gas_mscf == cum180_gas_mscf") \
+    .query(f"eur_total_mboeq == eur_total_mboeq") \
+    .assign(fluid_volume_bbl = lambda x: x.fluid_volume_m3*6.28981) \
+    .assign(proppant_intensity_lbm_ft = lambda x: x.proppant_volume_lbm / (x.horizontal_length*3.28084)) \
     .assign(fluid_intensity_bbl_ft = lambda x: x.fluid_volume_m3*6.28981 / (x.horizontal_length*3.28084)) \
     .assign(proppant_fluid_ratio_lbm_gal = lambda x: x.proppant_volume_lbm / (x.fluid_volume_m3*264.172))
 
@@ -240,36 +254,42 @@ def dd_options(ri_filter_var):
     
     if ri_filter_var == 'fluid_intensity_bbl_ft':
         dd_options = [
-            {"label": "Histogram of Fluid Volume per well",
-             "value": "hist_fluid_volume"},
-            {"label": "Boxplot of Fluid Volume by Campaign",
-             "value": "boxplot_fluid_volume"},
+            {"label": "Histogram of Fluid Intensity per well",
+             "value": "hist_fluid_intensity"},
+            {"label": "Boxplot of Fluid Intensity by Campaign",
+             "value": "boxplot_fluid_intensity"},
             {"label": "Fluid volume vs. Horizontal Length, by Fluid Intensity",
-             "value": "scatter_fluid_volume_hor_length_fluid_int"}
+             "value": "scatter_fluid_volume_hor_length_fluid_int"},
+            {"label": "Production Indicator vs. Fluid Intensity binned",
+             "value": "boxplot_prod_ind_fluid_int"}
             ]
-        dd_value = 'hist_fluid_volume'
+        dd_value = 'hist_fluid_intensity'
 
     elif ri_filter_var == 'proppant_intensity_lbm_ft':
         dd_options = [
-            {"label": "Histogram of Proppant Volume per well",
-             "value": "hist_proppant_volume"},
-            {"label": "Boxplot of Proppant Volume by Campaign",
-             "value": "boxplot_proppant_volume"},
+            {"label": "Histogram of Proppant Intensity per well",
+             "value": "hist_proppant_intensity"},
+            {"label": "Boxplot of Proppant Intensity by Campaign",
+             "value": "boxplot_proppant_intensity"},
             {"label": "Proppant Volume vs. Horizontal Length, by Proppant Intensity",
-             "value": "scatter_proppant_volume_hor_length_proppant_int"}
+             "value": "scatter_proppant_volume_hor_length_proppant_int"},
+            {"label": "Production Indicator vs. Proppant Intensity binned",
+             "value": "boxplot_prod_ind_proppant_int"}
             ]
-        dd_value = 'hist_proppant_volume'
+        dd_value = 'hist_proppant_intensity'
         
     else:
         dd_options = [
-            {"label": "Histogram of Number of Stages per well",
-             "value": "hist_number_stages"},
-            {"label": "Boxplot of Number of Stages by Campaign",
-             "value": "boxplot_number_stages"},
+            {"label": "Histogram of Stage Spacing per well",
+             "value": "hist_stage_spacing"},
+            {"label": "Boxplot of Stage Spacing by Campaign",
+             "value": "boxplot_stage_spacing"},
             {"label": "Number of Stages vs. Horizontal Length, by Stage Spacing",
-             "value": "scatter_number_stages_hor_length_stage_spacing"}
+             "value": "scatter_number_stages_hor_length_stage_spacing"},
+            {"label": "Production Indicator vs. Stage Spacing binned",
+             "value": "boxplot_prod_ind_stage_spacing"}
             ]
-        dd_value = 'hist_number_stages'
+        dd_value = 'hist_stage_spacing'
         
     return dd_options, dd_value
 
@@ -278,13 +298,19 @@ def dd_options(ri_filter_var):
     Output('graph_tab7_map', 'figure'),
     [Input('ri_tab7_filter_var', "value"),
      Input('ri_tab7_filter_ind', "value"),
+     Input('ri_tab7_prod_fluid','value'),
      Input('slider_tab7_campaign', "value")]
 )
-def update_map(ri_filter_var, ri_filter_ind, slider_campaign):
+def update_map(ri_filter_var, ri_filter_ind, ri_fluid, slider_campaign):
+    
+    if ri_fluid == "Oil":
+        dff = wells_df_oil
+    if ri_fluid == "Gas":
+        dff = wells_df_gas
     
     # filter df rows by slider campaign value
-    dff=wells_df[(wells_df['campaign']>=slider_campaign[0])&(wells_df['campaign']<=slider_campaign[1])]
-    
+    dff=dff[(dff['campaign']>=slider_campaign[0])&(dff['campaign']<=slider_campaign[1])]
+        
     if ri_filter_var == "proppant_intensity_lbm_ft":
         color_range = [1000,3500]
         color_midpoint = 2000
@@ -307,7 +333,8 @@ def update_map(ri_filter_var, ri_filter_ind, slider_campaign):
                     hover_name='well_name',
                     hover_data={'well_name':False,ri_filter_var:True,ri_filter_ind:True,
                                 "latitude":False,"longitude":False},
-                    color_continuous_scale=px.colors.cyclical.IceFire, 
+                    #color_continuous_scale=px.colors.cyclical.IceFire, 
+                    color_continuous_scale=px.colors.sequential.haline, 
                     size_max=30)
     fig.update_layout(hovermode='closest',
                       mapbox_style="carto-positron",
@@ -321,45 +348,58 @@ def update_map(ri_filter_var, ri_filter_ind, slider_campaign):
 @app.callback(
     Output('graph_tab7_completion', 'figure'),
     [Input('dd_tab7_graphs', 'value'),
+     Input('ri_tab7_filter_ind', "value"),
+     Input('ri_tab7_prod_fluid','value'),
      Input('slider_tab7_campaign', "value")])
 
-def dd_options(dd_graphs, slider_campaign):
+def dd_options(dd_graphs, ri_filter_ind, ri_fluid, slider_campaign):
+    
+    if ri_fluid == "Oil":
+        dff = wells_df_oil
+    if ri_fluid == "Gas":
+        dff = wells_df_gas
     
     # filter df rows by slider campaign value
-    dff=wells_df[(wells_df['campaign']>=slider_campaign[0])&(wells_df['campaign']<=slider_campaign[1])]
+    dff=dff[(dff['campaign']>=slider_campaign[0])&(dff['campaign']<=slider_campaign[1])]
     
-    if dd_graphs == 'hist_fluid_volume':
+    if dd_graphs == 'hist_fluid_intensity':
         fig = dff \
-            .hist_no_agg('fluid_volume_m3',
-            title = 'Histogram of Fluid Volume, m3',
+            .hist_no_agg('fluid_intensity_bbl_ft',
+            produced_fluid = ri_fluid,
+            title = 'Histogram of Fluid Intensity, bbl/ft',
             nbins = 50)
     
-    elif dd_graphs == 'hist_proppant_volume':
+    elif dd_graphs == 'hist_proppant_intensity':
         fig = dff \
-            .hist_no_agg('proppant_volume_lbm',
-            title = 'Histogram of Proppant Volume, lbm',
+            .hist_no_agg('proppant_intensity_lbm_ft',
+            produced_fluid = ri_fluid,
+            title = 'Histogram of Proppant Intensity, lbm/ft',
             nbins = 50)
         
-    elif dd_graphs == 'hist_number_stages':
+    elif dd_graphs == 'hist_stage_spacing':
         fig = dff \
-            .hist_no_agg('number_of_stages',
-                title = 'Histogram of Number of Stages',
-                nbins = 50)
+            .hist_no_agg('stage_spacing',
+            produced_fluid = ri_fluid,
+            title = 'Histogram of Stage Spacing, m',
+            nbins = 50)
     
-    elif dd_graphs == 'boxplot_fluid_volume':
+    elif dd_graphs == 'boxplot_fluid_intensity':
         fig = dff \
-            .boxplot_no_agg('fluid_volume_m3','campaign',
-            title = 'Boxplot of Fluid Volume by Campaign')
+            .boxplot_no_agg('fluid_intensity_bbl_ft','campaign',
+            produced_fluid = ri_fluid,
+            title = 'Boxplot of Fluid Intensity by Campaign')
             
-    elif dd_graphs == 'boxplot_proppant_volume':
+    elif dd_graphs == 'boxplot_proppant_intensity':
         fig = dff \
-            .boxplot_no_agg('proppant_volume_lbm','campaign',
-            title = 'Boxplot of Proppant Volume by Campaign')
+            .boxplot_no_agg('proppant_intensity_lbm_ft','campaign',
+            produced_fluid = ri_fluid,
+            title = 'Boxplot of Proppant Intensity by Campaign')
             
-    elif dd_graphs == 'boxplot_number_stages':
+    elif dd_graphs == 'boxplot_stage_spacing':
         fig = dff \
-            .boxplot_no_agg('number_of_stages','campaign',
-            title = 'Boxplot of Number of Stages by Campaign')
+            .boxplot_no_agg('stage_spacing','campaign',
+            produced_fluid = ri_fluid,
+            title = 'Boxplot of Stage Spacing by Campaign')
             
     elif dd_graphs == 'scatter_fluid_volume_hor_length_fluid_int':
         fig = dff \
@@ -403,6 +443,48 @@ def dd_options(dd_graphs, slider_campaign):
             bins = 'stage_spacing_bins',
             trendline = 'ols', trend = 'trace')
             
+    elif dd_graphs == 'boxplot_prod_ind_fluid_int':
+        fig = dff \
+            .query(f"well_name != 'BCeCg-111(h)'") \
+            .query(f"well_name != 'BCeCf-101(h)'") \
+            .query(f"well_name != 'BCeCf-105(h)'") \
+            .query(f"well_name != 'BCeCg-112(h)'") \
+            .query(f"well_name != 'BCeAe-113(h)'") \
+            .query(f"well_name != 'BCeCf-108(h)'") \
+            .query(f"well_name != 'BCeCf-106(h)'") \
+            .boxplot_no_agg(ri_filter_ind,'fluid_intensity_bbl_ft',
+            produced_fluid = ri_fluid,
+            sort_category = False, flip_coord = False, bins = 'fluid_int_bins',
+            title = f'Boxplot of {ri_filter_ind} by Fluid Intensity binned')
+            
+    elif dd_graphs == 'boxplot_prod_ind_proppant_int':
+        fig = dff \
+            .query(f"well_name != 'BCeCg-111(h)'") \
+            .query(f"well_name != 'BCeCf-101(h)'") \
+            .query(f"well_name != 'BCeCf-105(h)'") \
+            .query(f"well_name != 'BCeCg-112(h)'") \
+            .query(f"well_name != 'BCeAe-113(h)'") \
+            .query(f"well_name != 'BCeCf-108(h)'") \
+            .query(f"well_name != 'BCeCf-106(h)'") \
+            .boxplot_no_agg(ri_filter_ind,'proppant_intensity_lbm_ft',
+            produced_fluid = ri_fluid,
+            sort_category = False, flip_coord = False, bins = 'prop_int_bins',
+            title = f'Boxplot of {ri_filter_ind} by Proppant Intensity binned')
+            
+    elif dd_graphs == 'boxplot_prod_ind_stage_spacing':
+        fig = dff \
+            .query(f"well_name != 'BCeCg-111(h)'") \
+            .query(f"well_name != 'BCeCf-101(h)'") \
+            .query(f"well_name != 'BCeCf-105(h)'") \
+            .query(f"well_name != 'BCeCg-112(h)'") \
+            .query(f"well_name != 'BCeAe-113(h)'") \
+            .query(f"well_name != 'BCeCf-108(h)'") \
+            .query(f"well_name != 'BCeCf-106(h)'") \
+            .boxplot_no_agg(ri_filter_ind,'stage_spacing',
+            produced_fluid = ri_fluid,
+            sort_category = False, flip_coord = False, bins = 'stage_spacing_bins',
+            title = f'Boxplot of {ri_filter_ind} by Stage Spacing binned')
+        
     fig.update_layout(height=600, margin={"r":40,"t":40,"l":60,"b":0}, font=dict(size=10))
     
     return fig
