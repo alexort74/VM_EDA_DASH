@@ -9,5 +9,5 @@ poetry.lock
 *.whl
 *.gz
 __pycache__
-.zip
+*.zip
 .ebextensions
