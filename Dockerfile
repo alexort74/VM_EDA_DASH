@@ -7,5 +7,6 @@ COPY requirements.txt /tmp/requirements.txt
 RUN pip3 install -r /tmp/requirements.txt
 COPY ./app /app
 WORKDIR "/app"
+EXPOSE 8050
 ENTRYPOINT [ "python3" ]
 CMD [ "index.py" ]

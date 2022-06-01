@@ -11,10 +11,8 @@ services:
         volumes:
             - /home/ec2-user/nginx.conf:/etc/nginx/nginx.conf
             - /home/ec2-user/ssl:/ssl/
-
-    vm_dash:
-        image: 685653090285.dkr.ecr.us-east-2.amazonaws.com/vm_dash:latest
-        container_name: vm_dash
+            
+    vm-dash-app:
         restart: unless-stopped
         expose:
-            - 8050
+           - 8050
