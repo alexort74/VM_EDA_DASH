@@ -5,7 +5,7 @@ from dash import dcc
 from dash import html
 from dash.dependencies import Input, Output
 import dash_bootstrap_components as dbc
-from dash_table.Format import Format, Scheme, Trim
+#from dash_table.Format import Format, Scheme, Trim
 
 import pandas as pd
 import geopandas as gdp

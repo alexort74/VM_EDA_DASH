@@ -4,6 +4,11 @@ from dash import html
 import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output
 
+#import pathlib
+#import os
+# Change the current working directory
+#os.chdir('app')
+
 # Connect to main app.py file
 from app import app
 from app import server
@@ -50,4 +55,4 @@ def display_page(pathname):
 #    app.run_server(debug=True, use_reloader=False)
     
 if __name__ == '__main__':
-    app.run_server(host='0.0.0.0', port=8050, debug=False)
+   app.run_server(host='0.0.0.0', port=8050, debug=False)

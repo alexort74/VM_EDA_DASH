@@ -35,17 +35,6 @@ def Navbar():
                             dbc.NavLink("Completion", active="exact", href="/apps/app_tab7.py", id="page-7-link"),
                           ], horizontal='between', pills=True #className="me-auto", 
                         )
-                        #dbc.Nav(
-                        #  [
-                        #    dbc.NavItem(dbc.NavLink("Wells", active="exact", href="/apps/app_tab1.py"), id="page-1-link"),
-                        #    dbc.NavItem(dbc.NavLink("Production", active="exact", href="/apps/app_tab2.py"), id="page-2-link"),
-                        #    dbc.NavItem(dbc.NavLink("Areas/Operators", active="exact", href="/apps/app_tab4.py"), id="page-4-link"),
-                        #    dbc.NavItem(dbc.NavLink("Type Curves", active="exact", href="/apps/app_tab5.py"), id="page-5-link"),
-                        #    dbc.NavItem(dbc.NavLink("Top Performers", active="exact", href="/apps/app_tab6.py"), id="page-6-link"),
-                        #    dbc.NavItem(dbc.NavLink("Prod. Indicators", active="exact", href="/apps/app_tab3.py"), id="page-3-link"),
-                        #    dbc.NavItem(dbc.NavLink("Completion", active="exact", href="/apps/app_tab7.py"), id="page-7-link"),
-                        #  ], fill = True, horizontal='between', pills=True #className="me-auto", 
-                        #)
                       ], style={"height": "100%", 'font-size': '14px'}, width={'size': 7, "offset": 0} 
                     ),
                     dbc.Col(

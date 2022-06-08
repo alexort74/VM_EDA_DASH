@@ -6,15 +6,13 @@ from dash import html
 from dash import dash_table
 from dash.dependencies import Input, Output
 import dash_bootstrap_components as dbc
-from dash_table.Format import Format, Scheme, Trim
+#from dash_table.Format import Format, Scheme, Trim
 
 import pandas as pd
 from mizani.formatters import date_format, comma_format
 number_comma_format = comma_format(digits=0)
 number_date_format = date_format("%Y-%m-%d")
 import plotly.graph_objects as go
-
-#import pathlib
 
 from my_pandas_extensions.plotting_plotly import *
 #from my_pandas_extensions.database import collect_data
