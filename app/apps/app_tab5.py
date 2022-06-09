@@ -23,12 +23,31 @@ production_final_df = pd.read_pickle("datasets/production_final_Q42021_df.pkl")
 production_df = production_final_df.copy()
 production_df = production_df \
     .query(f"well_type == 'Horizontal'")
+    
+production_df = production_df[["well_name", 'operator', 'area', "fluid_type", 'campaign',
+                               "produced_fluid","well_type", 'horizontal_length',
+                               'production_date', 'oil_month_bbl', 'gas_month_mscf',
+                               ]]
 
 production_df_oil = production_df \
-    .query(f"produced_fluid == 'Oil'")
-    
+    .query(f"produced_fluid == 'Oil'") \
+    .query(f"well_name != 'BCeCg-111(h)'") \
+    .query(f"well_name != 'BCeCf-101(h)'") \
+    .query(f"well_name != 'BCeCf-105(h)'") \
+    .query(f"well_name != 'BCeCg-112(h)'") \
+    .query(f"well_name != 'BCeAe-113(h)'") \
+    .query(f"well_name != 'BCeCf-108(h)'") \
+    .query(f"well_name != 'BCeCf-106(h)'")
+            
 production_df_gas = production_df \
-    .query(f"produced_fluid == 'Gas'")
+    .query(f"produced_fluid == 'Gas'") \
+    .query(f"well_name != 'BCeCg-111(h)'") \
+    .query(f"well_name != 'BCeCf-101(h)'") \
+    .query(f"well_name != 'BCeCf-105(h)'") \
+    .query(f"well_name != 'BCeCg-112(h)'") \
+    .query(f"well_name != 'BCeAe-113(h)'") \
+    .query(f"well_name != 'BCeCf-108(h)'") \
+    .query(f"well_name != 'BCeCf-106(h)'")
 
 wells_df = wells_final_df.copy()
 wells_df = wells_df \
@@ -579,24 +598,10 @@ def process_data(dd_operator,dd_area,dd_fluid_type,dd_campaign,dd_wells, ri_flui
     isselect_all_wells = 'Start' #Initialize isselect_all
     
     if ri_fluid == 'Oil':    
-        prod_df=production_df_oil  \
-            .query(f"well_name != 'BCeCg-111(h)'") \
-            .query(f"well_name != 'BCeCf-101(h)'") \
-            .query(f"well_name != 'BCeCf-105(h)'") \
-            .query(f"well_name != 'BCeCg-112(h)'") \
-            .query(f"well_name != 'BCeAe-113(h)'") \
-            .query(f"well_name != 'BCeCf-108(h)'") \
-            .query(f"well_name != 'BCeCf-106(h)'")
+        prod_df=production_df_oil.copy()
     
     if ri_fluid == 'Gas':    
-        prod_df=production_df_gas  \
-            .query(f"well_name != 'BCeCg-111(h)'") \
-            .query(f"well_name != 'BCeCf-101(h)'") \
-            .query(f"well_name != 'BCeCf-105(h)'") \
-            .query(f"well_name != 'BCeCg-112(h)'") \
-            .query(f"well_name != 'BCeAe-113(h)'") \
-            .query(f"well_name != 'BCeCf-108(h)'") \
-            .query(f"well_name != 'BCeCf-106(h)'")
+        prod_df=production_df_gas.copy()
     
     if ri_fluid == 'Oil': 
         # =======================================================================

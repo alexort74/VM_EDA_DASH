@@ -25,7 +25,18 @@ import json
 
 #wells_final_df, production_final_df = collect_data()
 wells_final_df = pd.read_pickle("datasets/wells_final_Q42021_df.pkl")
+
 production_final_df = pd.read_pickle("datasets/production_final_Q42021_df.pkl")
+production_df = production_final_df \
+                    .query(f"production_status == 'Producing'") \
+                    .query(f"production_date >= '2012-02-01'")
+
+production_df = production_df[["well_type", 'area', "fluid_type", 'campaign',
+                               "produced_fluid",
+                               'production_date', 'oil_month_bpd', 'oil_month_bbl',
+                               'gas_month_mscf_d', 'gas_month_mscf',
+                               'well_name', 'cum_eff_prod_day', 'cum_oil_bbl', 'cum_gas_mscf'
+                               ]]
 
 # Building App ----
 
@@ -204,7 +215,7 @@ layout = dbc.Container(
 
 def dd_options(ri_well_fluid_type):
     
-    agg_groups = production_final_df[ri_well_fluid_type].unique()
+    agg_groups = production_df[ri_well_fluid_type].unique()
     agg_groups_all_2 = [{'label' : k, 'value' : k} for k in sorted(agg_groups)]
     agg_groups_all_1 = [{'label' : '(Select All)', 'value' : 'All'}]
     agg_groups_all = agg_groups_all_1 + agg_groups_all_2
@@ -254,30 +265,24 @@ def graph_production_rate(ri_prod_fluid, ri_well_fluid_type, dd_aggregation, ri_
         
     # Filter df according to selection
     if isselect_all == 'N':
-        prod_df = production_final_df[production_final_df[ri_well_fluid_type].isin(dd_aggregation)]
+        prod_df = production_df[production_df[ri_well_fluid_type].isin(dd_aggregation)]
     else:
-        prod_df = production_final_df.copy()
+        prod_df = production_df.copy()
         
     if ri_plot == "line":
         fig = prod_df \
-            .query(f"production_status == 'Producing'") \
-            .query(f"production_date >= '2012-02-01'") \
             .line_plot_agg('production_date', prod_var, ri_well_fluid_type, 
                 agg_func = agg_fun, log_plot = False, rule = 'M',
                 title=f"{ri_avg_total} {ri_prod_fluid} Well Production {ri_rate_vol} vs. Date by {ri_well_fluid_type}")
     
     elif ri_plot == "area":
         fig = prod_df \
-            .query(f"production_status == 'Producing'") \
-            .query(f"production_date >= '2012-02-01'") \
             .area_plot_agg('production_date', prod_var, ri_well_fluid_type, 
                     agg_func = agg_fun,
                     title=f"{ri_avg_total} {ri_prod_fluid} Well Production {ri_rate_vol} vs. Date by {ri_well_fluid_type}")
             
     else:
         fig = prod_df \
-                .query(f"production_status == 'Producing'") \
-                .query(f"production_date >= '2012-02-01'") \
                 .column_date_agg('production_date', prod_var, ri_well_fluid_type,
                         agg_func = agg_fun,
                         title=f"{ri_avg_total} {ri_prod_fluid} Well Production {ri_rate_vol} vs. Date by {ri_well_fluid_type}")
@@ -312,20 +317,16 @@ def graph_production_rate(ri_prod_fluid_value, ri_well_fluid_type, dd_aggregatio
         
     # Filter df according to selection
     if isselect_all == 'N':
-        prod_df = production_final_df[production_final_df[ri_well_fluid_type].isin(dd_aggregation)]
+        prod_df = production_df[production_df[ri_well_fluid_type].isin(dd_aggregation)]
     else:
-        prod_df = production_final_df.copy()
+        prod_df = production_df.copy()
     
     if ri_prod_fluid_value == "Oil":        
         fig = prod_df \
-                .query(f"production_status == 'Producing'") \
-                .query(f"production_date >= '2012-02-01'") \
                 .scatter_line_agg('cum_eff_prod_day', 'cum_oil_bbl', 'well_name', ri_well_fluid_type,
                 title = f'Cumulative Oil Production per Well by {ri_well_fluid_type}')
     else:
             fig = prod_df \
-                .query(f"production_status == 'Producing'") \
-                .query(f"production_date >= '2012-02-01'") \
                 .scatter_line_agg('cum_eff_prod_day', 'cum_gas_mscf', 'well_name', ri_well_fluid_type,
                 title = f'Cumulative Gas Production per Well by {ri_well_fluid_type}')
 
