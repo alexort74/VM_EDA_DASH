@@ -21,7 +21,7 @@ from app import app
 # Data ----
 #wells_final_df, production_final_df = collect_data()
 wells_final_df = pd.read_pickle("datasets/wells_final_Q42021_df.pkl")
-production_final_df = pd.read_pickle("datasets/production_final_Q42021_df.pkl")
+#production_final_df = pd.read_pickle("datasets/production_final_Q42021_df.pkl")
 
 shapes = gdp.read_file('assets/produccin-hidrocarburos-concesiones-de-explotacin-shp.shp')
 json_dict = json.loads(shapes.to_json())

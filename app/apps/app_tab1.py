@@ -102,8 +102,31 @@ areas_dict = {
 wells_df = wells_final_df.copy()
 wells_df['area_code'] = wells_df['area'].map(areas_dict)
 
+wells_df=wells_df  \
+            .query(f"well_name != 'BCeCg-111(h)'") \
+            .query(f"well_name != 'BCeCf-101(h)'") \
+            .query(f"well_name != 'BCeCf-105(h)'") \
+            .query(f"well_name != 'BCeCg-112(h)'") \
+            .query(f"well_name != 'BCeAe-113(h)'") \
+            .query(f"well_name != 'BCeCf-108(h)'") \
+            .query(f"well_name != 'BCeCf-106(h)'")
+
 production_df = production_final_df.copy()
 production_df['area_code'] = production_df['area'].map(areas_dict)
+
+production_df = production_df[["well_name", "well_type", "fluid_type", 'area_code', 'area', 'operator',
+                               'production_date', 'cum_oil_bbl', 'cum_gas_mscf',
+                               'oil_month_bpd', 'gas_month_mscf_d', 'production_status']]
+
+production_df=production_df  \
+            .query(f"production_status == 'Producing'") \
+            .query(f"well_name != 'BCeCg-111(h)'") \
+            .query(f"well_name != 'BCeCf-101(h)'") \
+            .query(f"well_name != 'BCeCf-105(h)'") \
+            .query(f"well_name != 'BCeCg-112(h)'") \
+            .query(f"well_name != 'BCeAe-113(h)'") \
+            .query(f"well_name != 'BCeCf-108(h)'") \
+            .query(f"well_name != 'BCeCf-106(h)'")
 
 # Building App Layout ----
 layout = dbc.Container(
@@ -300,7 +323,7 @@ layout = dbc.Container(
                     )
                 ], width={'size':4, 'offset':0}, style={"height": "100%"}
             ),
-            dcc.Store(id='map_well_df')
+            #dcc.Store(id='map_well_df')
         ], className="h-50", align="start", justify='start'
     )
     ], style={"height": "100vh"}, fluid=True
@@ -320,33 +343,17 @@ layout = dbc.Container(
 def process_data(well_type_list, fluid_type_list):
 
     if (len(well_type_list) > 0) & (len(fluid_type_list) > 0):
+        
         # well_df
-        well_df=wells_df  \
-            .query(f"well_name != 'BCeCg-111(h)'") \
-            .query(f"well_name != 'BCeCf-101(h)'") \
-            .query(f"well_name != 'BCeCf-105(h)'") \
-            .query(f"well_name != 'BCeCg-112(h)'") \
-            .query(f"well_name != 'BCeAe-113(h)'") \
-            .query(f"well_name != 'BCeCf-108(h)'") \
-            .query(f"well_name != 'BCeCf-106(h)'")
-
+        well_df = wells_df.copy()
         well_df=well_df[well_df['well_type'].isin(well_type_list)]
         well_df=well_df[well_df['fluid_type'].isin(fluid_type_list)]
         well_df = well_df.rename(columns={'completion_date':'date'})
 
         #prod_df
-        prod_df=production_df  \
-            .query(f"well_name != 'BCeCg-111(h)'") \
-            .query(f"well_name != 'BCeCf-101(h)'") \
-            .query(f"well_name != 'BCeCf-105(h)'") \
-            .query(f"well_name != 'BCeCg-112(h)'") \
-            .query(f"well_name != 'BCeAe-113(h)'") \
-            .query(f"well_name != 'BCeCf-108(h)'") \
-            .query(f"well_name != 'BCeCf-106(h)'")
-
+        prod_df = production_df.copy()
         prod_df=prod_df[prod_df['well_type'].isin(well_type_list)]
         prod_df=prod_df[prod_df['fluid_type'].isin(fluid_type_list)]
-
         prod_df = prod_df.rename(columns={'production_date':'date'})
     
     else:
@@ -467,7 +474,6 @@ def prod_figure_content(df_json):
         })   
 
     fig=df \
-        .query(f"production_status == 'Producing'") \
         .column_date_agg_no_group('production_date','production_status',
             rule = 'M', agg_func = pd.Series.count,
             title = 'Number of Producing Wells in Vaca Muerta per Year',
@@ -499,7 +505,6 @@ def wells_prod(df_json):
                             'oil_month_bpd', 'gas_month_mscf_d', 'production_status']] \
             .assign(max_prod_date = lambda x: x.production_date.max()) \
             .query(f"production_date == max_prod_date") \
-            .query(f"production_status == 'Producing'") \
             .agg({'well_name' : ['count'],
                 'cum_oil_bbl' : ['sum'],
                 'oil_month_bpd' : ['sum'],
@@ -553,7 +558,6 @@ def map_figure_update(df_well_json, df_prod_json, well_fluid_sel):
     
     oil_prod_df = df_prod.assign(max_prod_date = lambda x: x.production_date.max()) \
                         .query(f"production_date == max_prod_date") \
-                        .query(f"production_status == 'Producing'") \
                         .groupby(['area','area_code', 'operator'])["well_name"].count().reset_index(name="well_count")
     
     #.groupby(['area','area_code', 'operator'])["oil_month_bpd"].sum().reset_index(name="oil_prod")
