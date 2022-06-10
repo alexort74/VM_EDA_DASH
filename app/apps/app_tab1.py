@@ -118,7 +118,7 @@ production_df = production_df[["well_name", "well_type", "fluid_type", 'area_cod
                                'production_date', 'cum_oil_bbl', 'cum_gas_mscf',
                                'oil_month_bpd', 'gas_month_mscf_d', 'production_status']]
 
-production_df=production_df  \
+production_df=production_df \
             .query(f"production_status == 'Producing'") \
             .query(f"well_name != 'BCeCg-111(h)'") \
             .query(f"well_name != 'BCeCf-101(h)'") \
@@ -127,6 +127,9 @@ production_df=production_df  \
             .query(f"well_name != 'BCeAe-113(h)'") \
             .query(f"well_name != 'BCeCf-108(h)'") \
             .query(f"well_name != 'BCeCf-106(h)'")
+            
+production_df=production_df \
+            .assign(max_prod_date = lambda x: x.production_date.max())
 
 # Building App Layout ----
 layout = dbc.Container(
@@ -360,7 +363,7 @@ def process_data(well_type_list, fluid_type_list):
         raise dash.exceptions.PreventUpdate 
 
     well_df_json = well_df.to_json()
-    prod_df_json = prod_df.to_json()
+    prod_df_json = prod_df.to_json(date_format='iso')
 
     return well_df_json, prod_df_json
 
@@ -502,8 +505,8 @@ def wells_prod(df_json):
     df = df.rename(columns={'date':'production_date'})
 
     table1_df = df[["well_name", 'production_date',  'cum_oil_bbl', 'cum_gas_mscf',
-                            'oil_month_bpd', 'gas_month_mscf_d', 'production_status']] \
-            .assign(max_prod_date = lambda x: x.production_date.max()) \
+                            'oil_month_bpd', 'gas_month_mscf_d', 'max_prod_date',
+                            'production_status']] \
             .query(f"production_date == max_prod_date") \
             .agg({'well_name' : ['count'],
                 'cum_oil_bbl' : ['sum'],
