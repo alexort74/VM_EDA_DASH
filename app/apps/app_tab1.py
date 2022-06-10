@@ -351,18 +351,21 @@ def process_data(well_type_list, fluid_type_list):
         well_df = wells_df.copy()
         well_df=well_df[well_df['well_type'].isin(well_type_list)]
         well_df=well_df[well_df['fluid_type'].isin(fluid_type_list)]
-        well_df = well_df.rename(columns={'completion_date':'date'})
+        #well_df = well_df.rename(columns={'completion_date':'date'})
+        well_df['completion_date'] = pd.to_datetime(well_df['completion_date']).dt.strftime('%Y-%m-%d')
 
         #prod_df
         prod_df = production_df.copy()
         prod_df=prod_df[prod_df['well_type'].isin(well_type_list)]
         prod_df=prod_df[prod_df['fluid_type'].isin(fluid_type_list)]
-        prod_df = prod_df.rename(columns={'production_date':'date'})
+        #prod_df = prod_df.rename(columns={'production_date':'date'})
+        prod_df['production_date'] = pd.to_datetime(prod_df['production_date']).dt.strftime('%Y-%m-%d')
+        prod_df['max_prod_date'] = pd.to_datetime(prod_df['max_prod_date']).dt.strftime('%Y-%m-%d')
     
     else:
         raise dash.exceptions.PreventUpdate 
 
-    well_df_json = well_df.to_json()
+    well_df_json = well_df.to_json(date_format='iso')
     prod_df_json = prod_df.to_json(date_format='iso')
 
     return well_df_json, prod_df_json
@@ -379,9 +382,11 @@ def process_data(well_type_list, fluid_type_list):
 def radio_figure_content(df_json, plot_type):
         df = pd.read_json(df_json, convert_axes=True, convert_dates=True)
 
-        df = df.rename(columns={
-                'date':'completion_date'
-            })
+        #df = df.rename(columns={
+        #        'date':'completion_date'
+        #    })
+        
+        df['completion_date'] = pd.to_datetime(df['completion_date'])
 
         fig=df.column_date_agg('completion_date','well_name',plot_type,
                         x_label = 'Campaign',
@@ -472,9 +477,11 @@ def table_figure_content(df_json, plot_type):
 def prod_figure_content(df_json):
     df = pd.read_json(df_json, convert_axes=True, convert_dates=True)
 
-    df = df.rename(columns={
-            'date':'production_date'
-        })   
+    #df = df.rename(columns={
+    #        'date':'production_date'
+    #    })   
+    
+    df['production_date'] = pd.to_datetime(df['production_date'])
 
     fig=df \
         .column_date_agg_no_group('production_date','production_status',
@@ -502,7 +509,9 @@ def wells_prod(df_json):
 
     df = pd.read_json(df_json, convert_axes=True, convert_dates=True)
 
-    df = df.rename(columns={'date':'production_date'})
+    #df = df.rename(columns={'date':'production_date'})
+    df['production_date'] = pd.to_datetime(df['production_date'])
+    df['max_prod_date'] = pd.to_datetime(df['max_prod_date'])
 
     table1_df = df[["well_name", 'production_date',  'cum_oil_bbl', 'cum_gas_mscf',
                             'oil_month_bpd', 'gas_month_mscf_d', 'max_prod_date',
@@ -556,10 +565,13 @@ def map_figure_update(df_well_json, df_prod_json, well_fluid_sel):
     df_well = pd.read_json(df_well_json, convert_axes=True, convert_dates=True)
     df_prod = pd.read_json(df_prod_json, convert_axes=True, convert_dates=True)
 
-    df_well = df_well.rename(columns={'date':'completion_date'})
-    df_prod = df_prod.rename(columns={'date':'production_date'})
+    #df_well = df_well.rename(columns={'date':'completion_date'})
+    #df_prod = df_prod.rename(columns={'date':'production_date'})
+    df_well['completion_date'] = pd.to_datetime(df_well['completion_date'])
+    df_prod['production_date'] = pd.to_datetime(df_prod['production_date'])
+    df_prod['max_prod_date'] = pd.to_datetime(df_prod['max_prod_date'])
     
-    oil_prod_df = df_prod.assign(max_prod_date = lambda x: x.production_date.max()) \
+    oil_prod_df = df_prod \
                         .query(f"production_date == max_prod_date") \
                         .groupby(['area','area_code', 'operator'])["well_name"].count().reset_index(name="well_count")
     
